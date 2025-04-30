@@ -13,7 +13,7 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import java.util.UUID;
 
 public class ModFakePlayer{
-    private static final UUID SHADOW_PLAYER_UUID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID SHADOW_PLAYER_UUID = UUID.fromString("9e0d28bd-0a9d-473a-aa45-e3c1b3ac6c16");
 
     /**
      * Crea un FakePlayer con skin nera
@@ -22,7 +22,7 @@ public class ModFakePlayer{
      */
     public static FakePlayer create(ServerLevel level) {
         // Creazione di un profilo del giocatore con un UUID specifico
-        GameProfile profile = new GameProfile(SHADOW_PLAYER_UUID, "Shadow Player");
+        GameProfile profile = new GameProfile(SHADOW_PLAYER_UUID, "ShadowPlayer");
 
         // Aggiungiamo la proprietà della skin nera al profilo
         ShadowSkinManager.applyShadowSkin(profile);

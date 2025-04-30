@@ -1,12 +1,15 @@
 package net.yastral.theendisheremod.item.custom;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayer;
 import net.yastral.theendisheremod.entity.fakeplayer.ModFakePlayer;
@@ -14,6 +17,7 @@ import net.yastral.theendisheremod.entity.fakeplayer.ModFakePlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.TooltipFlag;
+import net.yastral.theendisheremod.item.ModItems;
 import net.yastral.theendisheremod.particle.ModParticles;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,14 +55,15 @@ public class ShadowSummonerItem extends Item {
 
             // Crea un FakePlayer con skin nera utilizzando la classe ModFakePlayer
             FakePlayer shadowPlayer = ModFakePlayer.create(serverLevel);
-
+            player.sendSystemMessage(Component.literal("§eNull joined the game"));
+            shadowPlayer.setGameMode(GameType.SURVIVAL);
+            shadowPlayer.setInvulnerable(false);
             if (shadowPlayer != null) {
                 // Imposta la posizione del player ombra
                 shadowPlayer.setPos(spawnX, spawnY, spawnZ);
-
                 // Imposta gli attributi del player
-                shadowPlayer.setCustomName(Component.literal("Shadow Player"));
-                shadowPlayer.setCustomNameVisible(true);
+                shadowPlayer.setCustomName(Component.literal("ShadowPlayer"));
+                shadowPlayer.setCustomNameVisible(false);
 
                 // Fai guardare il player ombra verso il giocatore
                 shadowPlayer.setYRot((playerYaw + 180) % 360);
