@@ -1,62 +1,71 @@
 package net.yastral.theendisheremod.entity.fakeplayer;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
-import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.OutgoingChatMessage;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+//import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.FakePlayerFactory;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.util.UUID;
 
-public class ModFakePlayer extends LivingEntity {
-    public ModFakePlayer(EntityType<? extends LivingEntity> type, Level world) {
-        super(type, world);
+public class ModFakePlayer{
+    private static final UUID SHADOW_PLAYER_UUID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+    /**
+     * Crea un FakePlayer con skin nera
+     * @param level Il ServerLevel in cui creare il player
+     * @return Il FakePlayer creato
+     */
+    public static FakePlayer create(ServerLevel level) {
+        // Creazione di un profilo del giocatore con un UUID specifico
+        GameProfile profile = new GameProfile(SHADOW_PLAYER_UUID, "Shadow Player");
+
+        // Aggiungiamo la proprietà della skin nera al profilo
+        ShadowSkinManager.applyShadowSkin(profile);
+
+        // Creazione del FakePlayer
+        //ClientInformation clientInfo = ClientInformation.createDefault();  // Solo per Minecraft 1.20.1+
+        FakePlayer fakePlayer = new FakePlayer(level, profile) {
+            @Override
+            public boolean isSpectator() {
+                return false;
+            }
+
+            @Override
+            public boolean isCreative() {
+                return false;
+            }
+        };
+
+        // Impostiamo la gamemode
+        fakePlayer.setGameMode(GameType.SURVIVAL);
+
+        // Assicuriamoci che il player sia visibile agli altri giocatori
+        broadcastFakePlayerInfoToClients(fakePlayer);
+
+        return fakePlayer;
     }
 
-    @Override
-    public Component getName() {
-        return Component.literal("Fake_Player"); // Nome personalizzato
+    /**
+     * Invia le informazioni del FakePlayer ai client connessi
+     * @param fakePlayer Il FakePlayer da inviare
+     */
+    private static void broadcastFakePlayerInfoToClients(FakePlayer fakePlayer) {
+        ServerPlayer serverPlayer = (ServerPlayer) fakePlayer;
+        var players = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers();
+
+        // Aggiorniamo l'info del player in tutti i client
+        ClientboundPlayerInfoUpdatePacket addPlayerPacket = new ClientboundPlayerInfoUpdatePacket(
+                ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, serverPlayer);
+
+        for (ServerPlayer player : players) {
+            if (player != fakePlayer) {
+                player.connection.send(addPlayerPacket);
+            }
+        }
     }
-
-    @Override
-    public boolean isAlive() {
-        return true; // Indica che l'entità è viva
-    }
-
-    @Override
-    public Iterable<ItemStack> getArmorSlots() {
-        return null;
-    }
-
-    @Override
-    public ItemStack getItemBySlot(EquipmentSlot equipmentSlot) {
-        return null;
-    }
-
-    @Override
-    public void setItemSlot(EquipmentSlot equipmentSlot, ItemStack itemStack) {
-
-    }
-
-    @Override
-    public HumanoidArm getMainArm() {
-        return null;
-    }
-
-    @Override
-    public boolean isCrouching() {
-        return false; // Configura comportamento come un vero player
-    }
-
 }
