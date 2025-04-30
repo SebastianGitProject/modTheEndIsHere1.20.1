@@ -1,0 +1,8 @@
+// 1.20.1	2025-04-29T20:21:37.7255652	Loot Tables
+cb4d0bc187d7d650d29ceb201320ac8734017a2c data/theendisheremod/loot_tables/blocks/deepslate_sapphire_ore.json
+135ecea07991a3964a7828e09f0829b93ce34f93 data/theendisheremod/loot_tables/blocks/end_stone_sapphire_ore.json
+5f0b50e92f00c795b858bd3d7ea98d5fb43fdf28 data/theendisheremod/loot_tables/blocks/nether_sapphire_ore.json
+685de51bfdefe5c2f7f18ef2536d61fa23119b62 data/theendisheremod/loot_tables/blocks/raw_sapphire_block.json
+8d0dd7856fa19f11ed12bcf1c208f38ed1658516 data/theendisheremod/loot_tables/blocks/sapphire_block.json
+ad220b5bd28e95837ef2845fd5aab8213a3cb8da data/theendisheremod/loot_tables/blocks/sapphire_ore.json
+be387061002db626e04acd9b2727dbac59575435 data/theendisheremod/loot_tables/blocks/sound_block.json

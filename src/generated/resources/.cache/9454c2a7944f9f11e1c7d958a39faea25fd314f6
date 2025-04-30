@@ -1,0 +1,7 @@
+// 1.20.1	2025-04-29T20:21:37.7255652	Tags for minecraft:block mod id theendisheremod
+794fb1956bd1b8156943045d951c7aa3a2913a48 data/forge/tags/blocks/needs_netherite_tool.json
+2fb2a88ab1f820983173dcfb2e3e83bc5bc5d7d6 data/minecraft/tags/blocks/mineable/pickaxe.json
+4c044884f39f1dc31c5ed978d0e2bd645e37f087 data/minecraft/tags/blocks/needs_diamond_tool.json
+9064d90d64d9684f1c31521d0ad9f0185b20c803 data/minecraft/tags/blocks/needs_iron_tool.json
+9ff8e28621fae85a957eee7ca7ba57782bd00fdb data/minecraft/tags/blocks/needs_stone_tool.json
+6c2e3c9f75ee127e1606103e8d6a7a46eaa411ef data/theendisheremod/tags/blocks/metal_detector_valuables.json

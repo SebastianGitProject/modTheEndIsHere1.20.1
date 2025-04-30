@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "theendisheremod:item/sapphire_staff"
+  }
+}

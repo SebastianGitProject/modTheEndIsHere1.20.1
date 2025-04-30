@@ -1,0 +1,28 @@
+{
+  "item.theendisheremod.sapphire": "Sapphire",
+  "item.theendisheremod.raw_sapphire": "Raw Sapphire",
+
+  "block.theendisheremod.sapphire_block": "Block Of Sapphire",
+  "block.theendisheremod.raw_sapphire_block": "Block Of Raw Sapphire",
+
+  "block.theendisheremod.sapphire_ore": "Sapphire Ore",
+  "block.theendisheremod.deepslate_sapphire_ore": "Deepslate Sapphire Ore",
+  "block.theendisheremod.nether_sapphire_ore": "Netherrack Sapphire Ore",
+  "block.theendisheremod.end_stone_sapphire_ore": "End Stone Sapphire Ore",
+
+
+  "item.theendisheremod.rhino_spawn_egg": "Rhino Spawn Egg",
+  "item.theendisheremod.shadow_summoner": "Shadow Summoner",
+  "item.theendisheremod.strawberry": "Strawberry",
+  "item.theendisheremod.metal_detector": "Metal Detector",
+  "block.theendisheremod.sound_block": "Sound Block",
+  "item.theendisheremod.sapphire_staff": "Sapphire Staff",
+
+
+  "tooltip.theendisheremod.metal_detector.tooltip": "Stocazzo",
+
+
+  "sounds.theendisheremod.metal_detector_found_ore": "Il metal detector suona stronzo e questo è per i sottotitoli",
+
+  "creative.theendishere_tab": "TheEndIsHere Tab"
+}
