@@ -17,6 +17,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.yastral.theendisheremod.block.ModBlocks;
 import net.yastral.theendisheremod.entity.ModEntities;
 import net.yastral.theendisheremod.entity.client.RhinoRender;
+import net.yastral.theendisheremod.event.MenuModifier;
 import net.yastral.theendisheremod.item.ModCreativeModTabs;
 import net.yastral.theendisheremod.item.ModItems;
 import net.yastral.theendisheremod.sound.ModSounds;

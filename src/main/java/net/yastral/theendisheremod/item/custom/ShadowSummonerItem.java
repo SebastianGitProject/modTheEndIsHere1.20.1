@@ -103,6 +103,8 @@ public class ShadowSummonerItem extends Item {
         pTooltipComponents.add(Component.translatable("tooltip.theendisheremod.shadow_summoner.tooltip"));
         super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
     }
+
+
 }
 
 

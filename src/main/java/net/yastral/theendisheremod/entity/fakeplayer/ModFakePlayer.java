@@ -43,6 +43,7 @@ public class ModFakePlayer{
 
         // Impostiamo la gamemode
         fakePlayer.setGameMode(GameType.SURVIVAL);
+        fakePlayer.setCustomNameVisible(false);
 
         // Assicuriamoci che il player sia visibile agli altri giocatori
         broadcastFakePlayerInfoToClients(fakePlayer);
