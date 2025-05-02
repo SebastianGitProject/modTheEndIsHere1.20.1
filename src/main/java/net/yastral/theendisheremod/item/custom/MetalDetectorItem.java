@@ -21,7 +21,7 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.server.ServerLifecycleHooks;
-import net.yastral.theendisheremod.entity.fakeplayer.ModFakePlayer;
+//import net.yastral.theendisheremod.entity.fakeplayer.ModFakePlayer;
 import net.yastral.theendisheremod.sound.ModSounds;
 import net.yastral.theendisheremod.util.ModTags;
 import org.jetbrains.annotations.Nullable;

@@ -2,6 +2,7 @@ package net.yastral.theendisheremod;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -17,11 +18,12 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.yastral.theendisheremod.block.ModBlocks;
 import net.yastral.theendisheremod.entity.ModEntities;
 import net.yastral.theendisheremod.entity.client.RhinoRender;
+import net.yastral.theendisheremod.event.FakeServerSimulator;
 import net.yastral.theendisheremod.event.MenuModifier;
 import net.yastral.theendisheremod.item.ModCreativeModTabs;
 import net.yastral.theendisheremod.item.ModItems;
 import net.yastral.theendisheremod.sound.ModSounds;
-import net.yastral.theendisheremod.particle.ModParticles;
+//import net.yastral.theendisheremod.particle.ModParticles;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -45,7 +47,7 @@ public class TheEndIsHereMod
 
         ModSounds.register(modEventBus);
         ModEntities.register(modEventBus);
-        ModParticles.register(modEventBus);
+        //ModParticles.register(modEventBus);
 
 
         modEventBus.addListener(this::commonSetup);
@@ -86,6 +88,7 @@ public class TheEndIsHereMod
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event)
         {
+            FakeServerSimulator.getInstance();
             EntityRenderers.register(ModEntities.RHINO.get(), RhinoRender::new);
         }
     }

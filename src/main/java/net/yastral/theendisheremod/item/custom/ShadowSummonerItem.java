@@ -12,13 +12,13 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayer;
-import net.yastral.theendisheremod.entity.fakeplayer.ModFakePlayer;
+//import net.yastral.theendisheremod.entity.fakeplayer.ModFakePlayer;
 
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.TooltipFlag;
 import net.yastral.theendisheremod.item.ModItems;
-import net.yastral.theendisheremod.particle.ModParticles;
+//import net.yastral.theendisheremod.particle.ModParticles;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -54,7 +54,7 @@ public class ShadowSummonerItem extends Item {
             double spawnZ = player.getZ() + zDir * spawnDistance;
 
             // Crea un FakePlayer con skin nera utilizzando la classe ModFakePlayer
-            FakePlayer shadowPlayer = ModFakePlayer.create(serverLevel);
+            /*FakePlayer shadowPlayer = ModFakePlayer.create(serverLevel);
             player.sendSystemMessage(Component.literal("§eNull joined the game"));
             shadowPlayer.setGameMode(GameType.SURVIVAL);
             shadowPlayer.setInvulnerable(false);
@@ -85,7 +85,7 @@ public class ShadowSummonerItem extends Item {
                 // Riproduce un suono quando viene evocato il player ombra
                 level.playSound(null, player.getX(), player.getY(), player.getZ(),
                         SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.5f, 1.5f);
-            }
+            }*/
         }
 
         // Danneggia l'oggetto dopo l'uso
