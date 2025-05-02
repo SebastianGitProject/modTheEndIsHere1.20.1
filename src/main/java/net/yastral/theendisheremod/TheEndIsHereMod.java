@@ -20,6 +20,7 @@ import net.yastral.theendisheremod.entity.ModEntities;
 import net.yastral.theendisheremod.entity.client.RhinoRender;
 import net.yastral.theendisheremod.event.FakeServerSimulator;
 import net.yastral.theendisheremod.event.MenuModifier;
+import net.yastral.theendisheremod.event.WorldEntityManager;
 import net.yastral.theendisheremod.item.ModCreativeModTabs;
 import net.yastral.theendisheremod.item.ModItems;
 import net.yastral.theendisheremod.sound.ModSounds;
@@ -88,6 +89,9 @@ public class TheEndIsHereMod
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event)
         {
+            WorldEntityManager.getInstance();
+
+            // Then initialize the FakeServerSimulator
             FakeServerSimulator.getInstance();
             EntityRenderers.register(ModEntities.RHINO.get(), RhinoRender::new);
         }

@@ -16,6 +16,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.yastral.theendisheremod.TheEndIsHereMod;
+import net.minecraftforge.event.level.LevelEvent;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -25,8 +26,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FakeServerSimulator {
     private static FakeServerSimulator instance;
     private boolean isServerActive = false;
-    private final List<String> fakePlayers = new ArrayList<>();
+    private final List<String> defaultFakePlayers = new ArrayList<>();
     private final Map<UUID, PlayerInfo> injectedPlayers = new HashMap<>();
+    private String lastAddedFakePlayer = "";
+
+    // Reference to the world entity manager
+    private final WorldEntityManager worldEntityManager;
 
     // Singleton pattern
     public static FakeServerSimulator getInstance() {
@@ -38,16 +43,19 @@ public class FakeServerSimulator {
 
     private FakeServerSimulator() {
         // Initialize fake player list
-        fakePlayers.add("Notch");
-        fakePlayers.add("jeb_");
-        fakePlayers.add("Dinnerbone");
-        fakePlayers.add("Grumm");
-        fakePlayers.add("MojangTeam");
-        fakePlayers.add("xXDragonSlayerXx");
-        fakePlayers.add("DiamondMiner2009");
-        fakePlayers.add("CreeperKiller");
-        fakePlayers.add("SkywalkerSteve");
-        fakePlayers.add("EnderQueen");
+        defaultFakePlayers.add("Notch");
+        defaultFakePlayers.add("jeb_");
+        defaultFakePlayers.add("Dinnerbone");
+        defaultFakePlayers.add("Grumm");
+        defaultFakePlayers.add("MojangTeam");
+        defaultFakePlayers.add("xXDragonSlayerXx");
+        defaultFakePlayers.add("DiamondMiner2009");
+        defaultFakePlayers.add("CreeperKiller");
+        defaultFakePlayers.add("SkywalkerSteve");
+        defaultFakePlayers.add("EnderQueen");
+
+        // Initialize the WorldEntityManager
+        worldEntityManager = WorldEntityManager.getInstance();
 
         // Register events on the Forge EventBus
         MinecraftForge.EVENT_BUS.register(this);
@@ -60,6 +68,13 @@ public class FakeServerSimulator {
      * Starts the fake server simulation
      */
     public void startServer() {
+        startServer(null);
+    }
+
+    /**
+     * Starts the fake server simulation with an optional custom fake player
+     */
+    public void startServer(String customFakePlayer) {
         if (!isServerActive) {
             isServerActive = true;
 
@@ -75,8 +90,33 @@ public class FakeServerSimulator {
                     return;
                 }
 
+                // Get the fake players from the world data
+                List<String> worldFakePlayers = worldEntityManager.getFakePlayersForCurrentWorld();
+
+                // If we're starting with a specific new fake player, add it
+                if (customFakePlayer != null && !customFakePlayer.isEmpty()) {
+                    if (!worldFakePlayers.contains(customFakePlayer)) {
+                        worldFakePlayers.add(customFakePlayer);
+                        lastAddedFakePlayer = customFakePlayer;
+
+                        // Update the world data with this new player
+                        worldEntityManager.activateServerForCurrentWorld(customFakePlayer);
+                    }
+                }
+
+                // If no world-specific fake players, use defaults
+                if (worldFakePlayers.isEmpty()) {
+                    // Add a random default fake player as a starter
+                    String randomFakePlayer = defaultFakePlayers.get(new Random().nextInt(defaultFakePlayers.size()));
+                    worldFakePlayers.add(randomFakePlayer);
+                    lastAddedFakePlayer = randomFakePlayer;
+
+                    // Update the world data with this player
+                    worldEntityManager.activateServerForCurrentWorld(randomFakePlayer);
+                }
+
                 // Add fake players to the tablist
-                for (String playerName : fakePlayers) {
+                for (String playerName : worldFakePlayers) {
                     addFakePlayerToTabList(playerName);
                 }
 
@@ -90,15 +130,52 @@ public class FakeServerSimulator {
                     }
                 }
 
-                // Send activation message
-                sendSystemMessage(Component.literal("Server simulation started! Players online: " +
-                        (fakePlayers.size() + 1)).withStyle(ChatFormatting.GREEN));
+                // Mark this world as having an active server
+                worldEntityManager.getOrCreateCurrentWorldData().setServerActive(true);
+                worldEntityManager.saveData();
+
+                // messaggio quando nel mondo c'è già un server
+                //sendSystemMessage(Component.literal("Server simulation started! Players online: " +
+                //        (worldFakePlayers.size() + 1)).withStyle(ChatFormatting.GREEN));
+
+                if (!lastAddedFakePlayer.isEmpty()) {
+                    sendSystemMessage(Component.literal("New player joined: " + lastAddedFakePlayer)
+                            .withStyle(ChatFormatting.YELLOW));
+                }
             } catch (Exception e) {
                 System.err.println("[TheEndIsHere] Failed to start fake server: " + e.getMessage());
                 e.printStackTrace();
                 sendSystemMessage(Component.literal("Failed to start server simulation: " + e.getMessage())
                         .withStyle(ChatFormatting.RED));
             }
+        } else if (customFakePlayer != null && !customFakePlayer.isEmpty()) {
+            // Server is already active, just add the new fake player
+            addNewFakePlayer(customFakePlayer);
+        }
+    }
+
+    /**
+     * Adds a new fake player to an already running server
+     */
+    public void addNewFakePlayer(String username) {
+        try {
+            // Add to the world data
+            worldEntityManager.activateServerForCurrentWorld(username);
+
+            // Add to the tab list
+            addFakePlayerToTabList(username);
+
+            // Remember last added player
+            lastAddedFakePlayer = username;
+
+            // Send notification
+            sendSystemMessage(Component.literal("New player joined: " + username)
+                    .withStyle(ChatFormatting.YELLOW));
+
+            System.out.println("[TheEndIsHere] Added new fake player: " + username);
+        } catch (Exception e) {
+            System.err.println("[TheEndIsHere] Failed to add new fake player: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -118,6 +195,9 @@ public class FakeServerSimulator {
 
                 // Send deactivation message
                 sendSystemMessage(Component.literal("Server simulation stopped!").withStyle(ChatFormatting.RED));
+
+                // Note: We don't remove the world from our tracked data,
+                // so it will activate again when this world is loaded
             } catch (Exception e) {
                 System.err.println("[TheEndIsHere] Failed to stop fake server: " + e.getMessage());
                 e.printStackTrace();
@@ -337,8 +417,15 @@ public class FakeServerSimulator {
     @SubscribeEvent
     public void onClientChat(ClientChatEvent event) {
         String message = event.getMessage();
-        if (message.contains("server-on")) {
-            startServer();
+
+        if (message.startsWith("server-on")) {
+            // Parse for custom player name (e.g., "server-on Herobrine")
+            String[] parts = message.split(" ", 2);
+            if (parts.length > 1 && !parts[1].trim().isEmpty()) {
+                startServer(parts[1].trim());
+            } else {
+                startServer();
+            }
             // Prevent the message from being sent to the server
             event.setCanceled(true);
         } else if (message.contains("server-off")) {
@@ -353,11 +440,66 @@ public class FakeServerSimulator {
      */
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && isServerActive) {
+        if (event.phase == TickEvent.Phase.END) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player != null && mc.getConnection() != null) {
-                injectFakePlayersIntoTabList();
+                // Check if we should activate the server based on world data
+                if (!isServerActive && worldEntityManager.shouldServerBeActiveForCurrentWorld()) {
+                    startServer();
+                }
+
+                // Update tab list if server is active
+                if (isServerActive) {
+                    injectFakePlayersIntoTabList();
+                }
             }
+        }
+    }
+
+    /**
+     * Handle world loading to check if we need to restore the server state
+     */
+    @SubscribeEvent
+    public void onWorldLoad(LevelEvent.Load event) {
+        try {
+            // Only run on client side
+            if (!event.getLevel().isClientSide()) return;
+
+            // Update current world ID
+            worldEntityManager.updateCurrentWorldId();
+
+            // Check if server should be active for this world
+            if (worldEntityManager.shouldServerBeActiveForCurrentWorld()) {
+                // We'll delay starting the server until the player is fully in the world
+                System.out.println("[TheEndIsHere] World has fake server data, will activate when player is ready");
+            }
+        } catch (Exception e) {
+            System.err.println("[TheEndIsHere] Error handling world load event: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Handle world unloading to save data and clean up
+     */
+    @SubscribeEvent
+    public void onWorldUnload(LevelEvent.Unload event) {
+        try {
+            // Only run on client side
+            if (!event.getLevel().isClientSide()) return;
+
+            // Save data before world unload
+            worldEntityManager.saveData();
+
+            // Reset state
+            isServerActive = false;
+            injectedPlayers.clear();
+            lastAddedFakePlayer = "";
+
+            System.out.println("[TheEndIsHere] Saved world data on unload");
+        } catch (Exception e) {
+            System.err.println("[TheEndIsHere] Error handling world unload event: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
