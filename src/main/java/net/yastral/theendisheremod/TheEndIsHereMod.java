@@ -14,6 +14,7 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLPaths;
 import net.yastral.theendisheremod.block.ModBlocks;
 import net.yastral.theendisheremod.entity.ModEntities;
 import net.yastral.theendisheremod.entity.client.RhinoRender;
@@ -24,7 +25,12 @@ import net.yastral.theendisheremod.item.ModItems;
 import net.yastral.theendisheremod.sound.ModSounds;
 //import net.yastral.theendisheremod.particle.ModParticles;
 import net.yastral.theendisheremod.worldgen.VoidWorldTeleporter;
+import net.yastral.theendisheremod.worldgen.WorldResourcesManager;
 import org.slf4j.Logger;
+
+import java.nio.file.Path;
+
+import static net.yastral.theendisheremod.worldgen.WorldResourcesManager.*;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(TheEndIsHereMod.MOD_ID)
@@ -82,6 +88,11 @@ public class TheEndIsHereMod
     {
     }
 
+    private static final String SOURCE_IN_JAR = "/worlds/void/"; // Percorso nel JAR
+    private static final String DEST_REL_PATH = "resources/assets/theendisheremod/worlds/void/"; // Destinazione in .minecraft
+
+
+
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
     @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents
@@ -93,6 +104,8 @@ public class TheEndIsHereMod
 
                 VoidWorldTeleporter.init();
 
+            WorldResourcesManager.getInstance().initialize();
+            WorldResourcesManager.getInstance().createWorldResources();
             // Then initialize the FakeServerSimulator
             FakeServerSimulator.getInstance();
             EntityRenderers.register(ModEntities.RHINO.get(), RhinoRender::new);
