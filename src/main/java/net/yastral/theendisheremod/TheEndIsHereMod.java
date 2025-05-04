@@ -2,7 +2,6 @@ package net.yastral.theendisheremod;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.renderer.entity.EntityRenderers;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -19,12 +18,12 @@ import net.yastral.theendisheremod.block.ModBlocks;
 import net.yastral.theendisheremod.entity.ModEntities;
 import net.yastral.theendisheremod.entity.client.RhinoRender;
 import net.yastral.theendisheremod.event.FakeServerSimulator;
-import net.yastral.theendisheremod.event.MenuModifier;
 import net.yastral.theendisheremod.event.WorldEntityManager;
 import net.yastral.theendisheremod.item.ModCreativeModTabs;
 import net.yastral.theendisheremod.item.ModItems;
 import net.yastral.theendisheremod.sound.ModSounds;
 //import net.yastral.theendisheremod.particle.ModParticles;
+import net.yastral.theendisheremod.worldgen.VoidWorldTeleporter;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -65,6 +64,7 @@ public class TheEndIsHereMod
 
     private void commonSetup(final FMLCommonSetupEvent event)
     {
+
     }
 
     // Add the example block item to the building blocks tab
@@ -90,6 +90,8 @@ public class TheEndIsHereMod
         public static void onClientSetup(FMLClientSetupEvent event)
         {
             WorldEntityManager.getInstance();
+
+                VoidWorldTeleporter.init();
 
             // Then initialize the FakeServerSimulator
             FakeServerSimulator.getInstance();

@@ -1,0 +1,11 @@
+{
+  "type": "theendisheremod:void",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "theendisheremod:void_biome",
+      "layers": [],
+      "structure_overrides": []
+    }
+  }
+}

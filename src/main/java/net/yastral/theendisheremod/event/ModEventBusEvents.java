@@ -1,6 +1,7 @@
 package net.yastral.theendisheremod.event;
 
-import net.minecraftforge.api.distmarker.Dist;
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;

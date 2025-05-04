@@ -3,8 +3,6 @@ package net.yastral.theendisheremod.item.custom;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -14,13 +12,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.server.ServerLifecycleHooks;
 //import net.yastral.theendisheremod.entity.fakeplayer.ModFakePlayer;
 import net.yastral.theendisheremod.sound.ModSounds;
 import net.yastral.theendisheremod.util.ModTags;
@@ -70,6 +62,9 @@ public class MetalDetectorItem extends Item {   //advanced items, premi shift e 
 
         return InteractionResult.SUCCESS;
     }
+
+
+
 
     @Override
     public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {  //serve per creare un tooltips e per farlo basta richiamare il metodo appendHovertext
