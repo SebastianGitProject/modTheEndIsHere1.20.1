@@ -6,6 +6,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.io.*;
+import java.net.URI;
 import java.nio.file.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -16,6 +17,7 @@ import java.util.zip.ZipInputStream;
  */
 @OnlyIn(Dist.CLIENT)
 public class WorldResourcesManager {
+    //public static final URI TARGET_PATH = ;
     // Percorso del file zip all'interno delle risorse
     private static final String ZIP_SOURCE_PATH = "worlds/void.zip";
     // Percorso dove estrarre i file
@@ -104,17 +106,17 @@ public class WorldResourcesManager {
     }
 
     /**
-     * Estrae il contenuto di void.zip nella directory "void" nella destinazione
+     * Estrae il contenuto di void.zip nella directory "worlds" nella destinazione
      */
     public void extractVoidWorldResources() {
         try {
             ClassLoader classLoader = getClass().getClassLoader();
 
-            // Crea la directory "void" nella destinazione se non esiste
-            Path voidTargetPath = Paths.get(TARGET_PATH, "void");
-            if (!Files.exists(voidTargetPath)) {
-                Files.createDirectories(voidTargetPath);
-                System.out.println("[TheEndIsHere] Creata directory: " + voidTargetPath.toAbsolutePath());
+            // Crea la directory "worlds" nella destinazione se non esiste
+            Path worldsTargetPath = Paths.get(TARGET_PATH);
+            if (!Files.exists(worldsTargetPath)) {
+                Files.createDirectories(worldsTargetPath);
+                System.out.println("[TheEndIsHere] Creata directory: " + worldsTargetPath.toAbsolutePath());
             }
 
             // Ottieni il file zip dalle risorse
@@ -126,7 +128,7 @@ public class WorldResourcesManager {
             }
 
             // Estrai lo zip
-            extractZipFile(zipFileStream, voidTargetPath.toString());
+            extractZipFile(zipFileStream, worldsTargetPath.toString());
 
             System.out.println("[TheEndIsHere] Estrazione delle risorse completata");
         } catch (Exception e) {
@@ -137,8 +139,8 @@ public class WorldResourcesManager {
             try {
                 File zipFile = new File("build/resources/main/" + ZIP_SOURCE_PATH);
                 if (zipFile.exists()) {
-                    Path voidTargetPath = Paths.get(TARGET_PATH, "void");
-                    extractZipFile(new FileInputStream(zipFile), voidTargetPath.toString());
+                    Path worldsTargetPath = Paths.get(TARGET_PATH);
+                    extractZipFile(new FileInputStream(zipFile), worldsTargetPath.toString());
                     System.out.println("[TheEndIsHere] Estrazione dal fallback completata");
                 } else {
                     System.err.println("[TheEndIsHere] File zip non trovato nel fallback: " + zipFile.getAbsolutePath());
@@ -220,16 +222,35 @@ public class WorldResourcesManager {
                 System.out.println("[TheEndIsHere] Creata directory per il mondo: " + worldId);
             }
 
-            // Copia tutte le risorse dalla directory void alla directory del mondo
-            Path voidPath = Paths.get(TARGET_PATH, "void");
-            if (Files.exists(voidPath)) {
-                System.out.println("[TheEndIsHere] Copio i file da: " + voidPath + " a: " + worldPath);
+            // Copia tutte le risorse dai file estratti alla directory del mondo
+            Path worldsPath = Paths.get(TARGET_PATH);
+            if (Files.exists(worldsPath)) {
+                System.out.println("[TheEndIsHere] Copio i file da: " + worldsPath + " a: " + worldPath);
 
-                // Copia ogni sottodirectory presente in void
-                copyDirectory(voidPath, worldPath);
+                // Copia solo i file rilevanti (escludendo eventuali directory di mondi già esistenti)
+                Files.list(worldsPath)
+                        .filter(path -> {
+                            String fileName = path.getFileName().toString();
+                            // Esclude directory che rappresentano mondi già esistenti
+                            return !Files.isDirectory(path) ||
+                                    (!fileName.equals(worldId) && !fileName.startsWith("test_") && !fileName.equals("void"));
+                        })
+                        .forEach(path -> {
+                            try {
+                                Path targetPath = worldPath.resolve(worldsPath.relativize(path).toString());
+                                if (Files.isDirectory(path)) {
+                                    copyDirectory(path, targetPath);
+                                } else {
+                                    Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                                }
+                            } catch (IOException e) {
+                                System.err.println("[TheEndIsHere] Errore durante la copia del file " + path + ": " + e.getMessage());
+                            }
+                        });
+
                 System.out.println("[TheEndIsHere] Risorse create per il mondo: " + worldId);
             } else {
-                System.err.println("[TheEndIsHere] Directory void non trovata in " + TARGET_PATH);
+                System.err.println("[TheEndIsHere] Directory delle risorse non trovata in " + TARGET_PATH);
                 System.err.println("[TheEndIsHere] Assicurati di aver chiamato initialize() prima di createWorldResources()");
             }
         } catch (IOException e) {

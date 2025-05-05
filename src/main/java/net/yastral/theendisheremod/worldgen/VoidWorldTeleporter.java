@@ -22,19 +22,14 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import net.yastral.theendisheremod.TheEndIsHereMod;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
 @Mod.EventBusSubscriber(modid = TheEndIsHereMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class VoidWorldTeleporter {
@@ -45,6 +40,7 @@ public class VoidWorldTeleporter {
     );
 
     // Specific coordinates to teleport to in the void world
+
     private static final int VOID_X = 129;
     private static final int VOID_Y = 4;
     private static final int VOID_Z = 129;
@@ -57,9 +53,9 @@ public class VoidWorldTeleporter {
     private static boolean pendingReturnTeleport = false;
     private static int teleportDelay = 0;
 
-    // Path to the void world in mod resources
-    private static final String VOID_WORLD_RESOURCE_PATH = "worlds/void";
-
+    // Path to the mod's void world files - aggiornato per puntare direttamente alla cartella risorse
+    private static final String MOD_VOID_WORLD_PATH = "resources/assets/theendisheremod/worlds";
+    private static final String TARGET_PATH = "resources/assets/theendisheremod/worlds";
     // Singleton instance
     private static VoidWorldTeleporter instance;
 
@@ -110,14 +106,14 @@ public class VoidWorldTeleporter {
     }
 
     /**
-     * Prepare the void world by extracting it from mod resources if needed
+     * Prepare the void world by copying it from mod resources if needed
      */
     private static void prepareVoidWorld() {
         try {
             MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
             if (server == null) {
                 // Server not available yet, will retry later
-                System.out.println("[TheEndIsHere] Server not available yet, will prepare void world later");
+                System.out.println("[TheEndIsHere] Server not available, will prepare void world later");
                 return;
             }
 
@@ -126,16 +122,27 @@ public class VoidWorldTeleporter {
             Path voidWorldDir = savesDir.resolve("void");
 
             if (!Files.exists(voidWorldDir)) {
-                System.out.println("[TheEndIsHere] Void world not found in saves, extracting from mod resources");
+                System.out.println("[TheEndIsHere] Void world not found in saves, copying from mod resources");
 
-                // Create directory structure
-                Files.createDirectories(voidWorldDir);
+                // Source path in the mod - usa direttamente la cartella delle risorse
+                Path modVoidWorldPath = Paths.get(MOD_VOID_WORLD_PATH);
 
-                // Extract void world from mod resources
-                extractVoidWorldFromModResources(voidWorldDir);
+                if (Files.exists(modVoidWorldPath)) {
+                    System.out.println("[TheEndIsHere] Found void world resources at: " + modVoidWorldPath.toAbsolutePath());
 
-                // Log success
-                System.out.println("[TheEndIsHere] Void world prepared at: " + voidWorldDir);
+                    // Create the destination directory
+                    Files.createDirectories(voidWorldDir);
+
+                    // Copy the entire directory recursively
+                    copyDirectory(modVoidWorldPath, voidWorldDir);
+
+                    System.out.println("[TheEndIsHere] Void world prepared at: " + voidWorldDir);
+                } else {
+                    System.err.println("[TheEndIsHere] Void world resources not found at: " + modVoidWorldPath.toAbsolutePath());
+
+                    // Tentativo di localizzare la directory attraverso percorsi alternativi
+                    tryAlternativeResourcePaths(voidWorldDir);
+                }
             } else {
                 System.out.println("[TheEndIsHere] Void world already exists at: " + voidWorldDir);
             }
@@ -146,54 +153,114 @@ public class VoidWorldTeleporter {
     }
 
     /**
-     * Extract void world files from mod JAR to the target directory
+     * Tenta di localizzare le risorse del mondo void attraverso percorsi alternativi
      */
-    private static void extractVoidWorldFromModResources(Path targetDir) throws IOException {
-        // Get the location of our mod's JAR file
-        String modJarPath = TheEndIsHereMod.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        if (modJarPath.startsWith("/")) {
-            modJarPath = modJarPath.substring(1); // Fix path on Windows
-        }
+    private static void tryAlternativeResourcePaths(Path voidWorldDir) {
+        try {
+            // Lista di potenziali percorsi alternativi
+            String[] alternativePaths = {
+                    "resources/assets/theendisheremod/worlds",
+                    "assets/theendisheremod/worlds",
+                    "resources/theendisheremod/worlds",
+                    "resources/assets/theendisheremod",
+                    "../resources/assets/theendisheremod/worlds",
+                    "../../resources/assets/theendisheremod/worlds",
+                    "mods/theendisheremod/resources/assets/theendisheremod/worlds"
+            };
 
-        System.out.println("[TheEndIsHere] Extracting void world from mod JAR at: " + modJarPath);
+            for (String pathStr : alternativePaths) {
+                Path path = Paths.get(pathStr);
+                if (Files.exists(path)) {
+                    System.out.println("[TheEndIsHere] Found void world resources at alternative path: " + path.toAbsolutePath());
 
-        // Open the JAR file
-        try (JarFile jarFile = new JarFile(new File(modJarPath))) {
-            // Look for all entries that are part of the void world
-            Enumeration<JarEntry> entries = jarFile.entries();
-            int filesExtracted = 0;
+                    // Create the destination directory
+                    Files.createDirectories(voidWorldDir);
 
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                String entryName = entry.getName();
+                    // Copy the entire directory recursively
+                    copyDirectory(path, voidWorldDir);
 
-                // Check if this entry is part of the void world
-                if (entryName.startsWith(VOID_WORLD_RESOURCE_PATH + "/") && !entry.isDirectory()) {
-                    // Get the relative path within the void world
-                    String relativePath = entryName.substring(VOID_WORLD_RESOURCE_PATH.length() + 1);
-                    Path targetFile = targetDir.resolve(relativePath);
-
-                    // Create parent directories if they don't exist
-                    Files.createDirectories(targetFile.getParent());
-
-                    // Extract the file
-                    try (InputStream is = jarFile.getInputStream(entry);
-                         FileOutputStream fos = new FileOutputStream(targetFile.toFile())) {
-
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = is.read(buffer)) != -1) {
-                            fos.write(buffer, 0, bytesRead);
-                        }
-
-                        filesExtracted++;
-                        System.out.println("[TheEndIsHere] Extracted: " + relativePath);
-                    }
+                    System.out.println("[TheEndIsHere] Void world prepared from alternative path at: " + voidWorldDir);
+                    return;
                 }
             }
 
-            System.out.println("[TheEndIsHere] Void world extraction complete. Files extracted: " + filesExtracted);
+            // Se nessun percorso alternativo funziona, cerca le risorse nel classpath
+            tryResourceFromClasspath(voidWorldDir);
+
+        } catch (Exception e) {
+            System.err.println("[TheEndIsHere] Error trying alternative paths: " + e.getMessage());
+            e.printStackTrace();
         }
+    }
+
+    /**
+     * Tenta di utilizzare il WorldResourcesManager per accedere alle risorse
+     */
+    private static void tryResourceFromClasspath(Path voidWorldDir) {
+        try {
+            System.out.println("[TheEndIsHere] Trying to extract resources using WorldResourcesManager");
+
+            // Utilizzo WorldResourcesManager per estrarre le risorse
+            WorldResourcesManager resourcesManager = WorldResourcesManager.getInstance();
+            resourcesManager.initialize();
+
+            // Dopo l'estrazione, prova a copiare le risorse
+            Path extractedPath = Paths.get(TARGET_PATH);
+            if (Files.exists(extractedPath)) {
+                System.out.println("[TheEndIsHere] Found resources extracted by WorldResourcesManager: " + extractedPath);
+
+                // Create the destination directory
+                Files.createDirectories(voidWorldDir);
+
+                // Copy the entire directory recursively
+                copyDirectory(extractedPath, voidWorldDir);
+
+                System.out.println("[TheEndIsHere] Void world prepared from extracted resources at: " + voidWorldDir);
+            } else {
+                System.err.println("[TheEndIsHere] Failed to find extracted resources: " + extractedPath);
+            }
+        } catch (Exception e) {
+            System.err.println("[TheEndIsHere] Error using WorldResourcesManager: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Copies a directory recursively
+     */
+    private static void copyDirectory(Path source, Path target) throws IOException {
+        // Create the target directory if it doesn't exist
+        if (!Files.exists(target)) {
+            Files.createDirectories(target);
+        }
+
+        // Walk through all files and subdirectories
+        Files.walk(source).forEach(sourcePath -> {
+            try {
+                Path targetPath = target.resolve(source.relativize(sourcePath));
+
+                // Skip if it's the same path
+                if (sourcePath.equals(targetPath)) {
+                    return;
+                }
+
+                // Create directories or copy files
+                if (Files.isDirectory(sourcePath)) {
+                    if (!Files.exists(targetPath)) {
+                        Files.createDirectories(targetPath);
+                    }
+                } else {
+                    // Ensure parent directories exist
+                    Files.createDirectories(targetPath.getParent());
+
+                    // Copy the file
+                    Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                    System.out.println("[TheEndIsHere] Copied: " + sourcePath + " -> " + targetPath);
+                }
+            } catch (IOException e) {
+                System.err.println("[TheEndIsHere] Error copying: " + sourcePath + ": " + e.getMessage());
+            }
+        });
     }
 
     /**
@@ -226,6 +293,9 @@ public class VoidWorldTeleporter {
             pendingReturnTeleport = true;
             pendingVoidTeleport = false;
             teleportDelay = 10; // Wait 10 ticks before attempting teleport
+
+
+
 
             // Send a confirmation message to the player
             LocalPlayer player = Minecraft.getInstance().player;
@@ -271,13 +341,8 @@ public class VoidWorldTeleporter {
                 return;
             }
 
-            // Check if the void world is prepared, and if not, prepare it now
-            Path savesDir = server.getWorldPath(LevelResource.ROOT);
-            Path voidWorldDir = savesDir.resolve("void");
-            if (!Files.exists(voidWorldDir)) {
-                clientPlayer.sendSystemMessage(Component.literal("[TheEndIsHere] Setting up void world...").withStyle(ChatFormatting.YELLOW));
-                prepareVoidWorld();
-            }
+            // Make sure void world is prepared before teleporting
+            prepareVoidWorld();
 
             // Save current player location
             ResourceKey<Level> currentDimension = clientPlayer.level().dimension();
@@ -320,8 +385,7 @@ public class VoidWorldTeleporter {
 
             // Confirm teleport
             clientPlayer.sendSystemMessage(Component.literal("[TheEndIsHere] Teleported to void world").withStyle(ChatFormatting.GREEN));
-            System.out.println("[TheEndIsHere] Player " + clientPlayer.getName().getString() + " teleported to void world at " +
-                    VOID_X + ", " + VOID_Y + ", " + VOID_Z);
+            System.out.println("[TheEndIsHere] Player " + clientPlayer.getName().getString() + " teleported to void world");
 
         } catch (Exception e) {
             System.err.println("[TheEndIsHere] Error teleporting to void world: " + e.getMessage());
@@ -377,9 +441,7 @@ public class VoidWorldTeleporter {
 
             // Confirm teleport
             clientPlayer.sendSystemMessage(Component.literal("[TheEndIsHere] Returned from void world").withStyle(ChatFormatting.GREEN));
-            System.out.println("[TheEndIsHere] Player " + clientPlayer.getName().getString() +
-                    " returned from void world to " + prevLocation.dimension.location() +
-                    " at " + prevLocation.x + ", " + prevLocation.y + ", " + prevLocation.z);
+            System.out.println("[TheEndIsHere] Player " + clientPlayer.getName().getString() + " returned from void world");
 
         } catch (Exception e) {
             System.err.println("[TheEndIsHere] Error returning from void world: " + e.getMessage());
