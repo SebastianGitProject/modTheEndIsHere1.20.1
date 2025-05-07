@@ -24,6 +24,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
         blockWithItem(ModBlocks.NETHER_SAPPHIRE_ORE);
 
         blockWithItem(ModBlocks.SOUND_BLOCK);
+        blockWithItem(ModBlocks.MOD_PORTAL_VOID);
     }
 
     private void blockWithItem(RegistryObject<Block> blockRegistryObject) {

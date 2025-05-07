@@ -13,6 +13,8 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.yastral.theendisheremod.TheEndIsHereMod;
+//import net.yastral.theendisheremod.block.custom.ModPortalBlock;
+import net.yastral.theendisheremod.block.custom.ModPortalBlock;
 import net.yastral.theendisheremod.block.custom.SoundBlock;
 import net.yastral.theendisheremod.item.ModItems;
 import net.yastral.theendisheremod.sound.ModSounds;
@@ -46,6 +48,8 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> SOUND_BLOCK = registerBlock("sound_block", () -> new SoundBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).sound(ModSounds.SOUND_BLOCK_SOUNDS)));
 
+    public static final RegistryObject<Block> MOD_PORTAL_VOID = registerBlock("mod_portal_void", () -> new ModPortalBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noLootTable().noOcclusion().noCollission()
+           ));
 
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block){

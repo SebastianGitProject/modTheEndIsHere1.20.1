@@ -5,6 +5,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -31,10 +32,17 @@ public class MenuModifier {
     private static final Component OPTIONS_TEXT = Component.translatable("menu.options");
     private static final Component QUIT_TEXT = Component.translatable("menu.quit");
     private static final Component Exit_TEXT = Component.translatable("menu.exit");
-    private static final Component SAVE_AND_QUIT_TEXT = Component.translatable("menu.returnToMenu");
+    private static final Component SAVE_AND_QUIT_TEXT = Component.translatable("menu.returnToMenuuu");
     private static final Component OPEN_TO_LAN_TEXT = Component.translatable("menu.shareToLan");
     private static final Component MODS_TEXT = Component.translatable("fml.menu.mods");
 
+    private static final Component REALMS_TEXT = Component.translatable("menu.online");
+    private static final Component MULTIPLAYER_TEXT = Component.translatable("menu.multiplayer");
+    private static final Component ACCESSIBILITY_TEXT = Component.translatable("menu.accessibility");
+    private static final Component LANGUAGE_TEXT = Component.translatable("menu.options.language");
+
+
+    private static final Component SINGLEPLAYER_TEXT = Component.translatable("menu.singleplayer");
     // The secret command to re-enable commands for yourself
     private static final String SECRET_COMMAND = "pippo";
 
@@ -56,6 +64,15 @@ public class MenuModifier {
                 disableButtonsInPauseMenu(screen);
             } catch (Exception e) {
                 System.err.println("Failed to disable buttons: " + e.getMessage());
+            }
+        }
+
+        if (screen instanceof TitleScreen) {
+            try {
+                //modifySinglePlayerButton(screen);
+                disableButtonsInMainMenu(screen);
+            } catch (Exception e) {
+                System.err.println("[TheEndIsHere] Failed to modify main menu: " + e.getMessage());
             }
         }
     }
@@ -97,6 +114,41 @@ public class MenuModifier {
         }
     }
 
+
+    private static void disableButtonsInMainMenu(Screen screen) {
+        try {
+            // Get all widgets from the screen using reflection
+            List<AbstractWidget> widgets = getAllWidgets(screen);
+
+            // Look for widgets that match our target buttons
+            for (AbstractWidget widget : widgets) {
+                String buttonText = widget.getMessage().getString();
+
+                // Check if the widget's message/text matches any of our target buttons
+                if (
+                        buttonText.equals(QUIT_TEXT.getString()) ||
+                        buttonText.equals(MODS_TEXT.getString()) ||
+                        buttonText.equals(REALMS_TEXT.getString()) ||
+                        buttonText.equals(ACCESSIBILITY_TEXT.getString()) ||
+                        buttonText.equals(LANGUAGE_TEXT.getString())) {
+
+                    // Make the button appear disabled but still visible
+                    widget.active = false;
+
+                    // If it's specifically a button, we can also override its onClick behavior
+                    if (widget instanceof Button button) {
+                        // Replace the button's action with an empty action
+                    }
+
+                    System.out.println("[TheEndIsHere] Disabled main menu button: " + buttonText);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[TheEndIsHere] Error disabling main menu buttons: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Event handler for button clicks on any screen.
      * This prevents clicking the disabled buttons if they couldn't be disabled properly.
@@ -105,8 +157,8 @@ public class MenuModifier {
     public static void onButtonClick(ScreenEvent.MouseButtonPressed.Pre event) {
         Screen screen = event.getScreen();
 
-        // Only handle clicks on the pause screen
-        if (screen instanceof PauseScreen) {
+        // Handle clicks on both pause screen and main menu
+        if (screen instanceof PauseScreen || screen instanceof TitleScreen) {
             int mouseX = (int) event.getMouseX();
             int mouseY = (int) event.getMouseY();
 
@@ -115,19 +167,42 @@ public class MenuModifier {
             for (AbstractWidget widget : widgets) {
                 String buttonText = widget.getMessage().getString();
 
-                if ((buttonText.equals(OPTIONS_TEXT.getString()) ||
-                        buttonText.equals(QUIT_TEXT.getString()) ||
-                        buttonText.equals(SAVE_AND_QUIT_TEXT.getString()) ||
-                        buttonText.equals(Exit_TEXT.getString()) ||
-                        buttonText.equals(OPEN_TO_LAN_TEXT.getString()) ||
-                        buttonText.equals(MODS_TEXT.getString())) &&
-                        widget.isMouseOver(mouseX, mouseY)) {
+                // Different set of buttons to disable based on screen type
+                boolean shouldDisable = false;
 
+                if (screen instanceof PauseScreen) {
+                    shouldDisable = buttonText.equals(OPTIONS_TEXT.getString()) ||
+                            buttonText.equals(QUIT_TEXT.getString()) ||
+                            buttonText.equals(SAVE_AND_QUIT_TEXT.getString()) ||
+                            buttonText.equals(Exit_TEXT.getString()) ||
+                            buttonText.equals(OPEN_TO_LAN_TEXT.getString()) ||
+                            buttonText.equals(MODS_TEXT.getString());
+                } else if (screen instanceof TitleScreen) {
+                    shouldDisable =
+                            buttonText.equals(QUIT_TEXT.getString()) ||
+                            buttonText.equals(MODS_TEXT.getString()) ||
+                            buttonText.equals(REALMS_TEXT.getString()) ||
+                            buttonText.equals(ACCESSIBILITY_TEXT.getString()) ||
+                            buttonText.equals(LANGUAGE_TEXT.getString());
+                }
+
+                if (shouldDisable && widget.isMouseOver(mouseX, mouseY)) {
                     // Cancel the click event
                     event.setCanceled(true);
                     return;
                 }
             }
+        }
+    }
+
+    private static Button.OnPress getButtonAction(Button button) {
+        try {
+            Field onPressField = Button.class.getDeclaredField("onPress");
+            onPressField.setAccessible(true);
+            return (Button.OnPress) onPressField.get(button);
+        } catch (Exception e) {
+            System.err.println("[TheEndIsHere] Error getting button action: " + e.getMessage());
+            return pressed -> {};
         }
     }
 
@@ -166,7 +241,7 @@ public class MenuModifier {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error accessing screen fields: " + e.getMessage());
+            System.err.println("[TheEndIsHere] Error accessing screen fields: " + e.getMessage());
         }
 
         return result;

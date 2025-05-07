@@ -39,5 +39,8 @@ public class DataGenerators extends FakePlayerFactory {
         generator.addProvider(event.includeServer(), ModLootTableProvider.create(packOutput));
         generator.addProvider(event.includeClient(), new ModBlockStateProvider(packOutput, existingFileHelper));
         generator.addProvider(event.includeClient(), new ModItemModelProvider(packOutput, existingFileHelper));
+
+
+        generator.addProvider(event.includeServer(), new ModWorldGenProvider(packOutput, lookupProvider));
     }
 }
