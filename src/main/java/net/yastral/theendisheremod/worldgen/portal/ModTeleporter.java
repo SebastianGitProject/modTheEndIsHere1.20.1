@@ -22,15 +22,19 @@ public class ModTeleporter implements ITeleporter {
 
     @Override
     public Entity placeEntity(Entity entity, ServerLevel currentWorld, ServerLevel destinationWorld,
-                              float yaw, Function<Boolean, Entity> repositionEntity) {
+                              float yaw, Function<Boolean, Entity> repositionEntity) {  //per piazzare il blocco nella dimensione
         entity = repositionEntity.apply(false);
         int y = 61;
+        int x = 500;
+        int z = 500;
 
         if (!insideDimension) {
             y = thisPos.getY();
+            x = thisPos.getX();
+            z = thisPos.getZ();
         }
 
-        BlockPos destinationPos = new BlockPos(thisPos.getX(), y, thisPos.getZ());
+        BlockPos destinationPos = new BlockPos(x, y, z);
 
         int tries = 0;
         while ((destinationWorld.getBlockState(destinationPos).getBlock() != Blocks.AIR) &&
@@ -41,7 +45,7 @@ public class ModTeleporter implements ITeleporter {
             tries++;
         }
 
-        entity.setPos(destinationPos.getX(), destinationPos.getY(), destinationPos.getZ());
+        //entity.setPos(destinationPos.getX(), destinationPos.getY(), destinationPos.getZ());
 
         if (insideDimension) {
             boolean doSetBlock = true;
